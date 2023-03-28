@@ -14,7 +14,7 @@ const connectMongo = require('./config/mongo.config');
 app.use(cors(corsOptions));
 app.use(helmet());
 app.use(compression());
-app.use(bodyParser.json());
+app.use(bodyParser());
 
 require('dotenv').config();
 
