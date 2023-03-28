@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const express = require('express');
+const serial = require('generate-serial-key');
 
 const Card = require('../models/card.model');
 const { GeneralError, BadRequest } = require('../middleware/error');
@@ -15,19 +16,16 @@ router.get('/', async (req, res, next) => {
 
 router.get('/find', async (req, res, next) => {
     try {
-        const { ref } = req.params;
+        const { ref: ref } = req.body;
         if (!ref) {
             throw new BadRequest('Missing required field: ref');
         }
         else {
-            Card.findOne({ ref: ref }, async (err, card) => {
-                if (err) {
-                    throw new GeneralError(err);
-                }
-                else {
+            Card.findOne({ ref: ref })
+                .then(card => {
                     res.status(200).json(card);
                 }
-            });
+            )
         }
     }
     catch(err) { next(err); };
@@ -39,12 +37,40 @@ router.get('/sayhi', (req, res, next) => {
 
 router.post('/create', jsonParser, async (req, res, next) => {
     try {
-        const { name, company, cell, fax, address, position, email, website } = req.body;
-        if (!name || !ref || !company || !cell || !address || !email) {
+        console.log(req.body);
+        const {
+            name: name,
+            company: company,
+            cell: cell,
+            fax: fax,
+            address: address,
+            position: position,
+            email: email,
+            website: website
+        } = req.body;
+        if (!name || !company || !cell || !address || !email) {
             throw new BadRequest('Missing required field');
         }
         else {
-            Club.create({})
+            const ref = serial.generate(8,"-", 4);
+            const cardFields = {
+                name: name,
+                company: company,
+                ref: ref,
+                cell: cell,
+                fax: fax,
+                address: address,
+                position: position,
+                email: email,
+                website: website
+            }
+            Card.create(cardFields)
+                .then(card => {
+                    res.status(201).json(card);
+                })
+                .catch(err => {
+                    throw new GeneralError(err);
+                });
         }
     }
     catch(err) { next(err); }
