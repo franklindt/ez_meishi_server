@@ -16,7 +16,7 @@ router.get('/', async (req, res, next) => {
 
 router.get('/find', async (req, res, next) => {
     try {
-        const { ref: ref } = req.body;
+        const { ref: ref } = req.query;
         if (!ref) {
             throw new BadRequest('Missing required field: ref');
         }
